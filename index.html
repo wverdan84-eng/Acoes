@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Portfólio Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f3f4f6;
+            --card-bg: #ffffff;
+            --text: #1f2937;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background-color: var(--bg); color: var(--text); padding-bottom: 50px; }
+        
+        /* Layout Grid */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        
+        .grid-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .grid-main { display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
+        
+        @media (max-width: 768px) { .grid-main { grid-template-columns: 1fr; } }
+
+        /* Components */
+        .card { background: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .card h3 { font-size: 0.9rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+        .card .value { font-size: 1.8rem; font-weight: 700; }
+        .card .sub-value { font-size: 0.9rem; margin-top: 5px; }
+        
+        .text-green { color: var(--success); }
+        .text-red { color: var(--danger); }
+
+        /* Form */
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 500; font-size: 0.9rem; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 1rem; }
+        button { width: 100%; background: var(--primary); color: white; padding: 12px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        button:hover { background: #1d4ed8; }
+        button:disabled { opacity: 0.7; cursor: wait; }
+
+        /* Table */
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        th { background: #f9fafb; font-weight: 600; }
+        
+        /* Rebalancing & Helpers */
+        .rebalance-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #e5e7eb; }
+        .tag { padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
+        .tag-buy { background: #dcfce7; color: #166534; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Meu Portfólio</h1>
+        <div style="text-align: right;">
+            <small>Dólar Hoje</small>
+            <div id="usd-rate" style="font-weight: bold;">R$ 0,00</div>
+        </div>
+    </div>
+
+    <div class="grid-dashboard">
+        <div class="card">
+            <h3>Patrimônio Total</h3>
+            <div class="value" id="total-equity">R$ 0,00</div>
+        </div>
+        <div class="card">
+            <h3>Lucro / Prejuízo</h3>
+            <div class="value" id="total-pl">R$ 0,00</div>
+            <div class="sub-value" id="total-pl-pct">0%</div>
+        </div>
+    </div>
+
+    <div class="grid-main">
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            
+            <div class="card">
+                <h3>Nova Operação</h3>
+                <form id="tradeForm">
+                    <div class="form-group">
+                        <label>Ativo (Ticker)</label>
+                        <input type="text" id="ativo" placeholder="Ex: PETR4, AAPL" required style="text-transform: uppercase;">
+                    </div>
+                    <div class="form-group">
+                        <label>Classe</label>
+                        <select id="classe" required>
+                            <option value="Acoes">Ações</option>
+                            <option value="FIIs">Fundos Imobiliários</option>
+                            <option value="RendaFixa">Renda Fixa</option>
+                            <option value="Internacional">Internacional</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <div style="display: flex; gap: 10px;">
+                            <div style="flex:1">
+                                <label>Tipo</label>
+                                <select id="tipo" onchange="togglePriceField()">
+                                    <option value="C">Compra</option>
+                                    <option value="V">Venda</option>
+                                </select>
+                            </div>
+                            <div style="flex:1">
+                                <label>Moeda</label>
+                                <select id="moeda">
+                                    <option value="BRL">BRL</option>
+                                    <option value="USD">USD</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Quantidade</label>
+                        <input type="number" id="quantidade" step="0.01" required>
+                    </div>
+                    <div class="form-group" id="div-preco">
+                        <label>Preço Pago (Opcional se já tem PM)</label>
+                        <input type="number" id="preco" step="0.01">
+                        <small style="color:#666; font-size: 0.75rem;">Deixe vazio para usar PM calculado</small>
+                    </div>
+                    <button type="submit" id="btnSave">Salvar Operação</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h3>Balanceamento Inteligente</h3>
+                <div id="rebalance-list">
+                    <p style="color:#666; font-size: 0.9rem;">Carregando dados...</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Alocação</h3>
+                <canvas id="allocationChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Meus Ativos</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ativo</th>
+                            <th>Qtd</th>
+                            <th>PM</th>
+                            <th>Preço Atual</th>
+                            <th>Valor (BRL)</th>
+                            <th>L/P</th>
+                        </tr>
+                    </thead>
+                    <tbody id="assets-body">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ==========================================
+    // CONFIGURAÇÃO (PREENCHA AQUI)
+    // ==========================================
+    const SHEET_ID = 'SEU_ID_DA_PLANILHA_AQUI'; 
+    const WEB_APP_URL = 'SUA_URL_DO_WEB_APP_AQUI';
+    // ==========================================
+
+    let portfolioData = [];
+    let quotesData = {};
+    let usdRate = 5.00; // Valor fallback
+    let allocationChart = null;
+
+    // Inicialização
+    window.onload = () => {
+        loadData();
+    };
+
+    function togglePriceField() {
+        const tipo = document.getElementById('tipo').value;
+        const div = document.getElementById('div-preco');
+        // Regra: Na venda não se informa preço (usa-se o PM interno para cálculo de lucro realizado, mas aqui simplificamos a entrada)
+        // O formulário pede Preco_Informado apenas para ajuste de PM ou entrada inicial
+        if (tipo === 'V') {
+            document.getElementById('preco').value = '';
+            document.getElementById('preco').disabled = true;
+        } else {
+            document.getElementById('preco').disabled = false;
+        }
+    }
+
+    // 1. Leitura de Dados (Direto da Planilha via Visualization API - Leitura Rápida)
+    async function loadData() {
+        try {
+            // Buscar Cotações
+            const quotesUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=COTACOES`;
+            const opsUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=OPERACOES`;
+
+            const [quotesRes, opsRes] = await Promise.all([
+                fetch(quotesUrl).then(r => r.text()),
+                fetch(opsUrl).then(r => r.text())
+            ]);
+
+            // Limpeza do JSONP retornado pelo Google
+            const parseGviz = (text) => {
+                const json = JSON.parse(text.substr(47).slice(0, -2));
+                return json.table.rows.map(row => row.c.map(cell => cell ? cell.v : null));
+            };
+
+            const rawQuotes = parseGviz(quotesRes);
+            const rawOps = parseGviz(opsRes);
+
+            processData(rawOps, rawQuotes);
+
+        } catch (error) {
+            console.error("Erro ao carregar:", error);
+            alert("Erro ao ler planilha. Verifique o ID e se ela está compartilhada (Link visível).");
+        }
+    }
+
+    // 2. Processamento Lógico (Coração do App)
+    function processData(ops, quotes) {
+        // Mapear Cotações
+        quotesData = {};
+        quotes.forEach(row => {
+            if(row[0]) quotesData[row[0]] = { price: row[1], currency: row[2] };
+        });
+
+        // Pegar Dólar
+        if (quotesData['USD']) usdRate = quotesData['USD'].price;
+        document.getElementById('usd-rate').innerText = `R$ ${usdRate.toFixed(2)}`;
+
+        // Consolidar Posições
+        let positions = {}; // Objeto: { TICKER: { qty, avgPrice, class, currency } }
+
+        ops.forEach(op => {
+            // Colunas: 0:Date, 1:Ativo, 2:Classe, 3:Qtd, 4:PrecoInfo, 5:Moeda
+            const ativo = op[1];
+            const classe = op[2];
+            const qtd = parseFloat(op[3]);
+            const precoInfo = op[4]; // Pode ser null
+            const moeda = op[5];
+
+            if (!positions[ativo]) {
+                positions[ativo] = { qty: 0, avgPrice: 0, classe: classe, currency: moeda };
+            }
+
+            let p = positions[ativo];
+
+            if (qtd > 0) { // COMPRA
+                // Cálculo PM Ponderado
+                const oldTotal = p.qty * p.avgPrice;
+                let cost = 0;
+                
+                // Se o usuário informou preço, usa ele. Se não, assume que pagou o PM atual (reinvestimento) ou zero se for erro.
+                // REGRA DO PROMPT: "Preco_Informado pode ser deixado em branco em compras futuras".
+                // Se for branco, vamos assumir o Preço Atual da cotação para estimativa ou manter PM (mas manter PM em compra dilui errado).
+                // Para simplificar e seguir a regra estrita: Se informado, usa. Se não, mantemos o PM anterior (Assume compra ao preço médio - neutro).
+                
+                const purchasePrice = precoInfo ? parseFloat(precoInfo) : p.avgPrice;
+                const newTotal = oldTotal + (qtd * purchasePrice);
+                p.qty += qtd;
+                p.avgPrice = p.qty > 0 ? newTotal / p.qty : 0;
+
+            } else { // VENDA
+                // Venda não altera PM
+                p.qty += qtd; // Qtd é negativa
+            }
+        });
+
+        renderInterface(positions);
+    }
+
+    // 3. Renderização
+    function renderInterface(positions) {
+        const tbody = document.getElementById('assets-body');
+        tbody.innerHTML = '';
+
+        let totalEquityBRL = 0;
+        let totalCostBRL = 0;
+        let classAlloc = {};
+
+        Object.keys(positions).forEach(ticker => {
+            const p = positions[ticker];
+            if (p.qty <= 0.001) return; // Ignora posições zeradas
+
+            // Dados Atuais
+            const quote = quotesData[ticker] ? quotesData[ticker].price : 0;
+            const isUSD = p.currency === 'USD';
+            
+            // Conversão para BRL
+            const currentPriceBRL = isUSD ? quote * usdRate : quote;
+            const avgPriceBRL = isUSD ? p.avgPrice * usdRate : p.avgPrice;
+
+            const totalValueBRL = p.qty * currentPriceBRL;
+            const totalCostPosBRL = p.qty * avgPriceBRL;
+
+            // Acumuladores
+            totalEquityBRL += totalValueBRL;
+            totalCostBRL += totalCostPosBRL;
+
+            // Agrupamento por classe
+            if (!classAlloc[p.classe]) classAlloc[p.classe] = 0;
+            classAlloc[p.classe] += totalValueBRL;
+
+            // Lucro
+            const profit = totalValueBRL - totalCostPosBRL;
+            const profitPct = totalCostPosBRL > 0 ? (profit / totalCostPosBRL) * 100 : 0;
+            const profitClass = profit >= 0 ? 'text-green' : 'text-red';
+
+            // HTML da Linha
+            const tr = `
+                <tr>
+                    <td><strong>${ticker}</strong><br><small style="color:#999">${p.classe}</small></td>
+                    <td>${p.qty.toFixed(2)}</td>
+                    <td>${isUSD ? 'US$ ': 'R$ '}${p.avgPrice.toFixed(2)}</td>
+                    <td>${isUSD ? 'US$ ': 'R$ '}${quote.toFixed(2)}</td>
+                    <td>R$ ${totalValueBRL.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                    <td class="${profitClass}">R$ ${profit.toLocaleString('pt-BR', {minimumFractionDigits: 2})}<br><small>${profitPct.toFixed(1)}%</small></td>
+                </tr>
+            `;
+            tbody.innerHTML += tr;
+        });
+
+        // Atualizar Dashboard Topo
+        document.getElementById('total-equity').innerText = totalEquityBRL.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+        const totalPL = totalEquityBRL - totalCostBRL;
+        const totalPLPct = totalCostBRL > 0 ? (totalPL / totalCostBRL) * 100 : 0;
+        
+        const plEl = document.getElementById('total-pl');
+        plEl.innerText = totalPL.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+        plEl.className = totalPL >= 0 ? 'value text-green' : 'value text-red';
+        document.getElementById('total-pl-pct').innerText = `${totalPLPct.toFixed(2)}%`;
+
+        // Renderizar Balanceamento e Gráfico
+        renderRebalanceAndChart(totalEquityBRL, classAlloc);
+    }
+
+    function renderRebalanceAndChart(total, alloc) {
+        // Gráfico
+        const ctx = document.getElementById('allocationChart').getContext('2d');
+        if (allocationChart) allocationChart.destroy();
+        
+        allocationChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(alloc),
+                datasets: [{
+                    data: Object.values(alloc),
+                    backgroundColor: ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        });
+
+        // Lógica de Balanceamento (Pesos Iguais)
+        const classes = Object.keys(alloc);
+        if (classes.length === 0) return;
+        
+        const targetPct = 1 / 4; // 4 Classes hardcoded no select (Acoes, FIIs, RF, Intl) - simplificação robusta
+        const targetVal = total * targetPct;
+        
+        const container = document.getElementById('rebalance-list');
+        container.innerHTML = '';
+
+        // Lista fixa de classes para garantir que sugira até o que não tem
+        const allTypes = ["Acoes", "FIIs", "RendaFixa", "Internacional"];
+        
+        allTypes.forEach(type => {
+            const currentVal = alloc[type] || 0;
+            const diff = targetVal - currentVal;
+            
+            if (diff > 0) {
+                // Sugerir Aporte
+                container.innerHTML += `
+                    <div class="rebalance-item">
+                        <div>
+                            <strong>${type}</strong>
+                            <div style="font-size:0.8rem; color:#666">Atual: ${(currentVal/total*100 || 0).toFixed(1)}% (Meta: 25%)</div>
+                        </div>
+                        <div style="text-align:right">
+                            <span class="tag tag-buy">Aportar</span>
+                            <div style="font-weight:bold; font-size:0.9rem">R$ ${diff.toLocaleString('pt-BR', {minimumFractionDigits: 0})}</div>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+    }
+
+    // 4. Envio de Dados
+    document.getElementById('tradeForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnSave');
+        const originalText = btn.innerText;
+        btn.innerText = 'Salvando...';
+        btn.disabled = true;
+
+        const tipo = document.getElementById('tipo').value;
+        let qtd = parseFloat(document.getElementById('quantidade').value);
+        if (tipo === 'V') qtd = qtd * -1; // Venda é negativo
+
+        const payload = {
+            ativo: document.getElementById('ativo').value,
+            classe: document.getElementById('classe').value,
+            quantidade: qtd,
+            precoInfo: document.getElementById('preco').value, // Envia vazio se não preenchido
+            moeda: document.getElementById('moeda').value
+        };
+
+        fetch(WEB_APP_URL, {
+            method: 'POST',
+            mode: 'no-cors', // Importante para GAS Web App sem preflight complexo
+            body: JSON.stringify(payload)
+        })
+        .then(() => {
+            alert('Operação Salva com Sucesso!');
+            document.getElementById('tradeForm').reset();
+            loadData(); // Recarrega dados
+        })
+        .catch(err => alert('Erro ao salvar: ' + err))
+        .finally(() => {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        });
+    });
+
+</script>
+
+</body>
+</html>
