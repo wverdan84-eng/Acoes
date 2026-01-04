@@ -4,450 +4,164 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Invest Pro</title>
-
-    <meta name="theme-color" content="#2563eb">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="manifest" href="manifest.json">
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <style>
-        :root {
-            --primary: #2563eb;
-            --bg: #f1f5f9;
-            --card-bg: #ffffff;
-            --text: #0f172a;
-            --text-light: #64748b;
-            --success: #16a34a;
-            --danger: #dc2626;
-            --border: #e2e8f0;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
-        
-        body { background-color: var(--bg); color: var(--text); padding-bottom: 80px; overflow-x: hidden; }
-
-        /* Container otimizado para não vazar na tela */
-        .container { max-width: 100%; margin: 0 auto; padding: 12px; }
-
-        /* Header Compacto */
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-top: 5px; }
-        .header h1 { font-size: 1.35rem; font-weight: 800; color: var(--primary); letter-spacing: -0.5px; }
-        .dollar-badge { background: #dbeafe; color: var(--primary); padding: 5px 12px; border-radius: 20px; font-weight: 700; font-size: 0.85rem; }
-
-        /* Cards Estilo iOS */
-        .card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 16px; /* Reduzido de 20px para ganhar espaço */
-            margin-bottom: 12px;
-            box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.05);
-            border: 1px solid var(--border);
-        }
-
-        .card h3 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-light); margin-bottom: 8px; font-weight: 600; }
-
-        /* Grid Dashboard - Ajuste Fino */
+        :root { --primary: #2563eb; --bg: #f1f5f9; --card-bg: #ffffff; --text: #0f172a; --text-light: #64748b; --success: #16a34a; --danger: #dc2626; --border: #e2e8f0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg); color: var(--text); padding: 12px; padding-bottom: 80px; }
+        .card { background: var(--card-bg); border-radius: 16px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .grid-dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-        /* Fonte responsiva para não quebrar número grande */
-        .value { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .sub-value { font-size: 0.8rem; color: var(--text-light); margin-top: 2px; font-weight: 500; }
-
-        /* Formulários */
-        .form-group { margin-bottom: 14px; }
-        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.85rem; color: var(--text-light); }
-        
-        input, select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            font-size: 0.95rem;
-            background: #fff;
-            outline: none;
-            -webkit-appearance: none; /* Remove estilo nativo iOS */
-        }
-        input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
-
-        /* Botão Grande */
-        button#btnSave {
-            width: 100%;
-            background: var(--primary);
-            color: white;
-            padding: 14px;
-            border: none;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 1rem;
-            cursor: pointer;
-            margin-top: 5px;
-        }
-        button#btnSave:active { transform: scale(0.97); opacity: 0.9; }
-
-        /* Tabela Otimizada */
-        .table-container { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 100%; }
-        th { text-align: left; color: var(--text-light); font-size: 0.7rem; padding-bottom: 8px; text-transform: uppercase; font-weight: 700; }
-        td { padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; vertical-align: middle; }
-        tr:last-child td { border-bottom: none; }
-        
-        /* Utilitários de Cor */
-        .text-green { color: var(--success); }
-        .text-red { color: var(--danger); }
-        
-        /* Tags */
-        .rebalance-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed var(--border); }
-        .tag-buy { background: #dcfce7; color: #15803d; padding: 3px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
-        
-        /* Ajuste para telas muito pequenas (iPhone SE, etc) */
-        @media (max-width: 360px) {
-            .value { font-size: 1.2rem; }
-            .grid-dashboard { gap: 8px; }
-            .container { padding: 10px; }
-        }
+        .value { font-size: 1.3rem; font-weight: 800; }
+        .sub-value { font-size: 0.8rem; color: var(--text-light); }
+        .rebalance-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--border); }
+        .tag-buy { background: #dcfce7; color: #15803d; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; }
+        td, th { padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        input, select { width: 100%; padding: 10px; margin: 5px 0; border-radius: 8px; border: 1px solid var(--border); }
+        button { width: 100%; background: var(--primary); color: #fff; padding: 12px; border: none; border-radius: 8px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="container">
     <div class="header">
-        <h1>Invest Pro</h1>
-        <div class="dollar-badge" id="usd-rate">USD ...</div>
+        <h1 style="color:var(--primary); font-size: 1.4rem;">Invest Pro</h1>
+        <div id="usd-rate" style="font-weight: bold; font-size: 0.9rem;">USD ...</div>
     </div>
 
     <div class="grid-dashboard">
         <div class="card">
-            <h3>Patrimônio</h3>
+            <small>Patrimônio</small>
             <div class="value" id="total-equity">...</div>
         </div>
         <div class="card">
-            <h3>Resultado</h3>
+            <small>Lucro/Prejuízo</small>
             <div class="value" id="total-pl">...</div>
-            <div class="sub-value" id="total-pl-pct">--%</div>
         </div>
     </div>
 
     <div class="card">
-        <h3>Alocação</h3>
-        <div style="position: relative; height: 220px; width: 100%;">
-            <canvas id="allocationChart"></canvas>
+        <small>ALOCAÇÃO POR CLASSE</small>
+        <div style="height: 180px;"><canvas id="allocationChart"></canvas></div>
+    </div>
+
+    <div class="card">
+        <small>O QUE COMPRAR AGORA? (REBALANCEAR)</small>
+        <div id="rebalance-list" style="margin-top: 10px;">
+            <p style="font-size: 0.8rem; color: #999;">Carregando sugestões...</p>
         </div>
     </div>
 
     <div class="card">
-        <h3>Nova Operação</h3>
+        <small>MEUS ATIVOS</small>
+        <table>
+            <tbody id="assets-body"></tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <small>NOVA OPERAÇÃO</small>
         <form id="tradeForm">
-            <div class="form-group">
-                <label>Ativo</label>
-                <input type="text" id="ativo" placeholder="Ex: PETR4" required style="text-transform: uppercase;">
+            <input type="text" id="ativo" placeholder="Ticker (ex: PETR4)" required style="text-transform: uppercase;">
+            <select id="classe"><option value="Acoes">Ações</option><option value="FIIs">FIIs</option><option value="RendaFixa">Renda Fixa</option><option value="Internacional">Exterior</option></select>
+            <div style="display: flex; gap: 5px;">
+                <select id="tipo"><option value="C">Compra</option><option value="V">Venda</option></select>
+                <select id="moeda"><option value="BRL">BRL</option><option value="USD">USD</option></select>
             </div>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                <div class="form-group">
-                    <label>Tipo</label>
-                    <select id="tipo" onchange="togglePriceField()">
-                        <option value="C">Compra</option>
-                        <option value="V">Venda</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Moeda</label>
-                    <select id="moeda">
-                        <option value="BRL">Real</option>
-                        <option value="USD">Dólar</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Classe</label>
-                <select id="classe" required>
-                    <option value="Acoes">Ações</option>
-                    <option value="FIIs">FIIs</option>
-                    <option value="RendaFixa">Renda Fixa</option>
-                    <option value="Internacional">Exterior</option>
-                    <option value="Cripto">Cripto</option>
-                </select>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                <div class="form-group">
-                    <label>Quantidade</label>
-                    <input type="number" id="quantidade" step="0.000001" placeholder="0" required>
-                </div>
-                <div class="form-group" id="div-preco">
-                    <label>Preço (Opcional)</label>
-                    <input type="number" id="preco" step="0.000001" placeholder="R$ 0,00">
-                </div>
-            </div>
-
-            <button type="submit" id="btnSave">Salvar</button>
+            <input type="number" id="quantidade" placeholder="Qtd" required step="any">
+            <input type="number" id="preco" placeholder="Preço Pago (Opcional)" step="any">
+            <button type="submit" id="btnSave">Salvar Operação</button>
         </form>
     </div>
 
-    <div class="card">
-        <h3>Rebalanceamento</h3>
-        <div id="rebalance-list">
-            <p style="color:var(--text-light); font-size: 0.85rem; text-align:center; padding:10px;">Calculando...</p>
-        </div>
-    </div>
-
-    <div class="card">
-        <h3>Meus Ativos</h3>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Ativo</th>
-                        <th style="text-align:right">Qtd</th>
-                        <th style="text-align:right">Atual</th>
-                        <th style="text-align:right">Total</th>
-                    </tr>
-                </thead>
-                <tbody id="assets-body"></tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
 <script>
-    // ==========================================
-    // CONFIGURAÇÃO (PREENCHA AQUI)
-    // ==========================================
     const SHEET_ID = '1qGy-7cNRnwgqPNhDP-KEPns_XJ1BuKVbYczwqt_lSMM'; 
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxGf_LIa5DVJOKFebCVsU09zy01JKPTZZ-dolKJW2Yrz6HS8t5z5EjocLCvOm36OymL/exec';
-    // ==========================================
 
     let usdRate = 5.00;
     let allocationChart = null;
 
-    window.onload = () => { loadData(); };
-
-    function togglePriceField() {
-        const tipo = document.getElementById('tipo').value;
-        const input = document.getElementById('preco');
-        if (tipo === 'V') {
-            input.value = ''; input.disabled = true; input.placeholder = "Automático";
-        } else {
-            input.disabled = false; input.placeholder = "R$ 0,00";
-        }
-    }
-
-    // Função de limpeza de texto (Resolve o bug do NaN)
-    const cleanStr = (s) => s ? String(s).trim().toUpperCase() : "";
+    window.onload = loadData;
 
     async function loadData() {
         try {
-            const quotesUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=COTACOES`;
-            const opsUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=OPERACOES`;
-
-            const [quotesRes, opsRes] = await Promise.all([
-                fetch(quotesUrl).then(r => r.text()),
-                fetch(opsUrl).then(r => r.text())
-            ]);
-
-            const parseGviz = (text) => {
-                const json = JSON.parse(text.substr(47).slice(0, -2));
-                return json.table.rows.map(row => row.c.map(cell => cell ? cell.v : null));
-            };
-
-            processData(parseGviz(opsRes), parseGviz(quotesRes));
-
-        } catch (error) {
-            console.error(error);
-            document.getElementById('rebalance-list').innerHTML = '<p style="color:red; text-align:center">Erro ao carregar.<br>Verifique conexão.</p>';
-        }
+            const qUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=COTACOES`;
+            const oUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=OPERACOES`;
+            const [rQ, rO] = await Promise.all([fetch(qUrl).then(r => r.text()), fetch(oUrl).then(r => r.text())]);
+            const parse = (t) => JSON.parse(t.substr(47).slice(0, -2)).table.rows.map(r => r.c.map(c => c ? c.v : null));
+            processData(parse(rO), parse(rQ));
+        } catch (e) { alert("Erro ao carregar dados da planilha."); }
     }
 
     function processData(ops, quotes) {
-        let quotesData = {};
-        
-        // Processa cotações com limpeza de chave
-        quotes.forEach(row => { 
-            if(row[0]) {
-                const ticker = cleanStr(row[0]);
-                quotesData[ticker] = { price: row[1] || 0, currency: row[2] }; 
-            }
+        let qData = {};
+        quotes.forEach(r => { if(r[0]) qData[r[0].toString().trim().toUpperCase()] = { p: r[1] || 0 }; });
+        if(qData['USD']) { usdRate = qData['USD'].p; document.getElementById('usd-rate').innerText = "Dólar: R$ " + usdRate.toFixed(2); }
+
+        let pos = {};
+        ops.forEach(o => {
+            let t = o[1].toString().trim().toUpperCase();
+            if(!pos[t]) pos[t] = { qty: 0, cost: 0, classe: o[2], moeda: o[5] };
+            let q = parseFloat(o[3]);
+            pos[t].qty += q;
+            if(q > 0) pos[t].cost += q * (o[4] || 0);
         });
 
-        // Atualiza Dólar
-        if (quotesData['USD']) usdRate = quotesData['USD'].price;
-        document.getElementById('usd-rate').innerText = `US$ ${usdRate.toFixed(2)}`;
-
-        let positions = {};
-
-        ops.forEach(op => {
-            const ativo = cleanStr(op[1]); // IMPORTANTE: Limpa o nome do ativo
-            if (!ativo) return;
-
-            const classe = op[2];
-            const qtd = parseFloat(op[3]);
-            const precoInfo = op[4];
-            const moeda = op[5];
-
-            if (!positions[ativo]) positions[ativo] = { qty: 0, avgPrice: 0, classe: classe, currency: moeda };
-            let p = positions[ativo];
-
-            if (qtd > 0) { 
-                const oldTotal = p.qty * p.avgPrice;
-                // Se precoInfo vier vazio, tenta usar o preco atual da cotacao, senao mantem PM
-                let purchasePrice = precoInfo ? parseFloat(precoInfo) : (quotesData[ativo]?.price || p.avgPrice);
-                
-                const newTotal = oldTotal + (qtd * purchasePrice);
-                p.qty += qtd;
-                p.avgPrice = p.qty > 0 ? newTotal / p.qty : 0;
-            } else { 
-                p.qty += qtd; 
-            }
-        });
-
-        renderInterface(positions, quotesData);
+        render(pos, qData);
     }
 
-    function renderInterface(positions, quotesData) {
-        const tbody = document.getElementById('assets-body');
-        tbody.innerHTML = '';
+    function render(pos, qData) {
+        let total = 0, totalCost = 0, alloc = {}, tbody = document.getElementById('assets-body');
+        tbody.innerHTML = "";
 
-        let totalEquityBRL = 0;
-        let totalCostBRL = 0;
-        let classAlloc = {};
+        Object.keys(pos).forEach(t => {
+            let p = pos[t]; if(p.qty <= 0) return;
+            let curP = qData[t]?.p || 0;
+            let val = p.qty * curP * (p.moeda === 'USD' ? usdRate : 1);
+            total += val;
+            totalCost += p.cost * (p.moeda === 'USD' ? usdRate : 1);
+            alloc[p.classe] = (alloc[p.classe] || 0) + val;
 
-        // Ordenar por Valor Total (Maior para menor)
-        const sortedTickers = Object.keys(positions).sort((a,b) => {
-            const valA = positions[a].qty * (quotesData[a]?.price || 0);
-            const valB = positions[b].qty * (quotesData[b]?.price || 0);
-            return valB - valA;
+            tbody.innerHTML += `<tr><td><b>${t}</b><br><small>${p.classe}</small></td><td style="text-align:right">R$ ${val.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`;
         });
 
-        sortedTickers.forEach(ticker => {
-            const p = positions[ticker];
-            if (p.qty <= 0.001) return;
+        document.getElementById('total-equity').innerText = "R$ " + total.toLocaleString('pt-BR');
+        let pl = total - totalCost;
+        document.getElementById('total-pl').innerText = "R$ " + pl.toLocaleString('pt-BR');
+        document.getElementById('total-pl').style.color = pl >= 0 ? 'var(--success)' : 'var(--danger)';
 
-            // Busca Cotação (Proteção contra undefined)
-            const quoteInfo = quotesData[ticker] || { price: 0, currency: 'BRL' };
-            const quote = quoteInfo.price;
-            
-            const isUSD = p.currency === 'USD';
-            const currentPriceBRL = isUSD ? quote * usdRate : quote;
-            const totalValueBRL = p.qty * currentPriceBRL;
-            const totalCostPosBRL = p.qty * (isUSD ? p.avgPrice * usdRate : p.avgPrice);
-
-            totalEquityBRL += totalValueBRL;
-            totalCostBRL += totalCostPosBRL;
-
-            if (!classAlloc[p.classe]) classAlloc[p.classe] = 0;
-            classAlloc[p.classe] += totalValueBRL;
-
-            const profit = totalValueBRL - totalCostPosBRL;
-            const profitClass = profit >= 0 ? 'text-green' : 'text-red';
-            const symbol = isUSD ? 'US$' : 'R$';
-
-            const tr = `
-                <tr>
-                    <td><strong>${ticker}</strong><br><small style="color:var(--text-light)">${p.classe}</small></td>
-                    <td style="text-align:right">${p.qty.toFixed(2)}</td>
-                    <td style="text-align:right">${symbol} ${quote.toFixed(2)}</td>
-                    <td style="text-align:right">
-                        <strong>R$ ${totalValueBRL.toLocaleString('pt-BR', {minimumFractionDigits: 0, maximumFractionDigits: 0})}</strong><br>
-                        <small class="${profitClass}">${profit >= 0 ? '+' : ''}${profit.toLocaleString('pt-BR', {minimumFractionDigits: 0})}</small>
-                    </td>
-                </tr>
-            `;
-            tbody.innerHTML += tr;
-        });
-
-        const fmtBRL = (v) => v.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
-        document.getElementById('total-equity').innerText = fmtBRL(totalEquityBRL);
-        
-        const totalPL = totalEquityBRL - totalCostBRL;
-        const totalPLPct = totalCostBRL > 0 ? (totalPL / totalCostBRL) * 100 : 0;
-        const plEl = document.getElementById('total-pl');
-        
-        plEl.innerText = fmtBRL(totalPL);
-        plEl.className = totalPL >= 0 ? 'value text-green' : 'value text-red';
-        document.getElementById('total-pl-pct').innerText = `${totalPLPct > 0 ? '+' : ''}${totalPLPct.toFixed(2)}%`;
-
-        renderChart(classAlloc);
-        renderRebalance(totalEquityBRL, classAlloc);
-    }
-
-    function renderChart(alloc) {
+        // GRÁFICO
         const ctx = document.getElementById('allocationChart').getContext('2d');
-        if (allocationChart) allocationChart.destroy();
-        
-        allocationChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(alloc),
-                datasets: [{
-                    data: Object.values(alloc),
-                    backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'],
-                    borderWidth: 0
-                }]
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: {size: 11} } } } 
+        if(allocationChart) allocationChart.destroy();
+        allocationChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(alloc), datasets: [{ data: Object.values(alloc), backgroundColor: ['#2563eb','#10b981','#f59e0b','#ef4444'] }] }, options: { maintainAspectRatio: false, plugins: { legend: { position: 'right' } } } });
+
+        // REBALANCEAMENTO POR ATIVO
+        let reb = document.getElementById('rebalance-list');
+        reb.innerHTML = "";
+        let tickers = Object.keys(pos).filter(t => pos[t].qty > 0);
+        let metaPerTicker = total / tickers.length; // Macete: divide o bolo igual entre os ativos
+
+        tickers.forEach(t => {
+            let curVal = pos[t].qty * (qData[t]?.p || 0) * (pos[t].moeda === 'USD' ? usdRate : 1);
+            if(curVal < metaPerTicker) {
+                let diff = metaPerTicker - curVal;
+                reb.innerHTML += `<div class="rebalance-item"><span><b>${t}</b></span><span class="tag-buy">Comprar R$ ${diff.toLocaleString('pt-BR', {maximumFractionDigits:0})}</span></div>`;
             }
         });
     }
 
-    function renderRebalance(total, alloc) {
-        const container = document.getElementById('rebalance-list');
-        container.innerHTML = '';
-        
-        // Definição de Meta: Divisão igual entre as classes encontradas + fixas
-        const keys = Object.keys(alloc);
-        const allTypes = [...new Set([...keys, "Acoes", "FIIs", "RendaFixa"])];
-        const targetPct = 1 / allTypes.length; 
-        
-        let hasSuggestion = false;
-
-        allTypes.forEach(type => {
-            const currentVal = alloc[type] || 0;
-            const diff = (total * targetPct) - currentVal;
-            if (diff > 50) { 
-                hasSuggestion = true;
-                container.innerHTML += `
-                    <div class="rebalance-item">
-                        <div><strong>${type}</strong></div>
-                        <div>
-                            <span class="tag-buy">Aportar R$ ${diff.toLocaleString('pt-BR', {minimumFractionDigits: 0})}</span>
-                        </div>
-                    </div>
-                `;
-            }
-        });
-        
-        if(!hasSuggestion) container.innerHTML = '<div style="text-align:center; color:#999; padding:10px; font-size:0.9rem">Carteira Equilibrada! ✅</div>';
-    }
-
-    // Envio de Form
     document.getElementById('tradeForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        const btn = document.getElementById('btnSave');
-        const oldTxt = btn.innerText;
-        btn.innerText = 'Salvando...'; btn.disabled = true;
-
-        const tipo = document.getElementById('tipo').value;
-        let qtd = parseFloat(document.getElementById('quantidade').value);
-        if (tipo === 'V') qtd = qtd * -1;
-
-        fetch(WEB_APP_URL, {
-            method: 'POST', mode: 'no-cors',
-            body: JSON.stringify({
-                ativo: cleanStr(document.getElementById('ativo').value),
-                classe: document.getElementById('classe').value,
-                quantidade: qtd,
-                precoInfo: document.getElementById('preco').value,
-                moeda: document.getElementById('moeda').value
-            })
-        }).then(() => {
-            alert('Salvo!'); document.getElementById('tradeForm').reset(); loadData();
-        }).finally(() => { btn.innerText = oldTxt; btn.disabled = false; });
+        const btn = document.getElementById('btnSave'); btn.innerText = "Salvando...";
+        const payload = {
+            ativo: document.getElementById('ativo').value.toUpperCase(),
+            classe: document.getElementById('classe').value,
+            quantidade: parseFloat(document.getElementById('quantidade').value) * (document.getElementById('tipo').value === 'V' ? -1 : 1),
+            precoInfo: document.getElementById('preco').value,
+            moeda: document.getElementById('moeda').value
+        };
+        fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) })
+        .then(() => { alert("Sucesso!"); location.reload(); });
     });
 </script>
 </body>
