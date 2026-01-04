@@ -3,39 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Invest Pro 3.0</title>
+    <title>Invest Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --primary: #2563eb; --bg: #f1f5f9; --card-bg: #ffffff; --text: #0f172a; --text-light: #64748b; --success: #16a34a; --danger: #dc2626; --border: #e2e8f0; --gold: #ca8a04; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg); color: var(--text); padding: 12px; padding-bottom: 40px; }
         
-        .card { background: var(--card-bg); border-radius: 16px; padding: 18px; margin-bottom: 12px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        /* HEADER ESTILIZADO */
+        .app-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 4px; margin-bottom: 15px; }
+        .brand { display: flex; align-items: center; gap: 10px; }
+        .app-icon { width: 40px; height: 40px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; border-radius: 12px; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2); }
+        .app-title { font-size: 1.4rem; font-weight: 800; color: var(--primary); letter-spacing: -0.5px; }
+        .usd-badge { background: #dbeafe; color: var(--primary); padding: 6px 12px; border-radius: 20px; font-weight: 700; font-size: 0.85rem; }
+
+        .card { background: var(--card-bg); border-radius: 16px; padding: 18px; margin-bottom: 12px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         small { font-size: 0.75rem; text-transform: uppercase; color: var(--text-light); font-weight: bold; display: block; margin-bottom: 10px; border-left: 3px solid var(--primary); padding-left: 8px; }
 
         .grid-dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
         .value { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.5px; }
 
-        /* Gráfico Maior */
         .chart-container { position: relative; height: 250px; width: 100%; margin: 10px 0; }
 
-        /* Rebalanceamento */
-        .reb-header { background: #fef9c3; color: var(--gold); padding: 10px; border-radius: 10px; font-weight: 800; font-size: 0.85rem; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .reb-header { background: #fef9c3; color: var(--gold); padding: 10px; border-radius: 10px; font-weight: 800; font-size: 0.85rem; margin-bottom: 10px; display: flex; justify-content: space-between; }
         .rebalance-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px dashed var(--border); }
         .tag-buy { background: #dcfce7; color: #15803d; padding: 6px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: bold; }
 
-        /* Form Estilizado */
         .form-row { display: flex; gap: 8px; margin-bottom: 8px; }
         input, select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: #f8fafc; font-size: 1rem; outline: none; }
-        input:focus { border-color: var(--primary); }
-        button { width: 100%; background: var(--primary); color: #fff; padding: 15px; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem; margin-top: 10px; transition: 0.2s; }
-        button:active { background: #1d4ed8; transform: scale(0.98); }
-
+        button { width: 100%; background: var(--primary); color: #fff; padding: 15px; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem; margin-top: 10px; }
+        
         table { width: 100%; border-collapse: collapse; }
         td { padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
     </style>
 </head>
 <body>
+
+    <div class="app-header">
+        <div class="brand">
+            <div class="app-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;">
+                    <line x1="12" y1="20" x2="12" y2="10"></line>
+                    <line x1="18" y1="20" x2="18" y2="4"></line>
+                    <line x1="6" y1="20" x2="6" y2="16"></line>
+                </svg>
+            </div>
+            <h1 class="app-title">Invest Pro</h1>
+        </div>
+        <div id="usd-rate" class="usd-badge">US$ 0.00</div>
+    </div>
 
     <div class="grid-dashboard">
         <div class="card">
@@ -65,32 +81,27 @@
     <div class="card">
         <small>Nova Operação / Preço Médio</small>
         <form id="tradeForm">
-            <input type="text" id="ativo" placeholder="Ticker (ex: IVVB11 ou AAPL)" required style="text-transform: uppercase; margin-bottom: 8px;">
-            
+            <input type="text" id="ativo" placeholder="Ticker (ex: PETR4)" required style="text-transform: uppercase; margin-bottom: 8px;">
             <div class="form-row">
                 <select id="classe">
                     <option value="Acoes">Ações</option>
                     <option value="FIIs">FIIs</option>
                     <option value="Internacional">Exterior</option>
                     <option value="RendaFixa">Renda Fixa</option>
-                    <option value="Cripto">Cripto</option>
                 </select>
                 <select id="moeda">
-                    <option value="BRL">BRL (R$)</option>
-                    <option value="USD">USD (US$)</option>
+                    <option value="BRL">BRL</option>
+                    <option value="USD">USD</option>
                 </select>
             </div>
-
             <div class="form-row">
                 <input type="number" id="quantidade" placeholder="Qtd" required step="any">
-                <input type="number" id="preco" placeholder="Preço/Custo" step="any">
+                <input type="number" id="preco" placeholder="Preço" step="any">
             </div>
-            
             <select id="tipo" style="margin-bottom: 8px;">
-                <option value="C">Compra (Aumenta Posição)</option>
-                <option value="V">Venda (Reduz Posição)</option>
+                <option value="C">Compra</option>
+                <option value="V">Venda</option>
             </select>
-
             <button type="submit" id="btnSave">Salvar na Planilha</button>
         </form>
     </div>
@@ -114,13 +125,16 @@
             const [rQ, rO] = await Promise.all([fetch(qUrl).then(r => r.text()), fetch(oUrl).then(r => r.text())]);
             const parse = (t) => JSON.parse(t.substr(47).slice(0, -2)).table.rows.map(r => r.c.map(c => c ? c.v : null));
             processData(parse(rO), parse(rQ));
-        } catch (e) { alert("Erro de conexão com a planilha."); }
+        } catch (e) { console.error(e); }
     }
 
     function processData(ops, quotes) {
         let qData = {};
         quotes.forEach(r => { if(r[0]) qData[r[0].toString().trim().toUpperCase()] = { p: r[1] || 0 }; });
-        if(qData['USD']) usdRate = qData['USD'].p;
+        if(qData['USD']) {
+            usdRate = qData['USD'].p;
+            document.getElementById('usd-rate').innerText = "US$ " + usdRate.toFixed(2);
+        }
 
         let pos = {};
         ops.forEach(o => {
@@ -128,7 +142,7 @@
             if(!pos[t]) pos[t] = { qty: 0, cost: 0, classe: o[2], moeda: o[5] || 'BRL' };
             let q = parseFloat(o[3]);
             pos[t].qty += q;
-            if(q > 0) pos[t].cost += q * (o[4] || 0); // Cálculo de custo acumulado
+            if(q > 0) pos[t].cost += q * (o[4] || 0);
         });
         render(pos, qData);
     }
@@ -143,7 +157,7 @@
             let val = pos[t].qty * (qData[t]?.p || 0) * rate;
             total += val; totalCost += pos[t].cost * rate;
             alloc[pos[t].classe] = (alloc[pos[t].classe] || 0) + val;
-            tbody.innerHTML += `<tr><td><b>${t}</b><br><small style="border:none; padding:0; color:#94a3b8">${pos[t].classe}</small></td><td style="text-align:right"><b>R$ ${val.toLocaleString('pt-BR',{minimumFractionDigits:2})}</b></td></tr>`;
+            tbody.innerHTML += `<tr><td><b>${t}</b><br><small style="border:none; padding:0;">${pos[t].classe}</small></td><td style="text-align:right">R$ ${val.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`;
         });
 
         document.getElementById('total-equity').innerText = "R$ " + total.toLocaleString('pt-BR', {minimumFractionDigits:2});
@@ -151,43 +165,37 @@
         document.getElementById('total-pl').innerText = "R$ " + pl.toLocaleString('pt-BR', {minimumFractionDigits:2});
         document.getElementById('total-pl').style.color = pl >= 0 ? 'var(--success)' : 'var(--danger)';
 
-        // Chart Config
         const ctx = document.getElementById('allocationChart').getContext('2d');
         if(allocationChart) allocationChart.destroy();
         allocationChart = new Chart(ctx, { 
             type: 'doughnut', 
-            data: { labels: Object.keys(alloc), datasets: [{ data: Object.values(alloc), backgroundColor: ['#2563eb','#10b981','#f59e0b','#ef4444','#8b5cf6'], borderWidth: 2 }] }, 
-            options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } } } 
+            data: { labels: Object.keys(alloc), datasets: [{ data: Object.values(alloc), backgroundColor: ['#2563eb','#10b981','#f59e0b','#ef4444'], borderWidth: 2 }] }, 
+            options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } 
         });
 
-        // Rebalanceamento: Focar na menor classe e 3 ativos
         const container = document.getElementById('rebalance-container');
         let classes = Object.keys(alloc);
-        if(classes.length === 0) return;
-
-        let mainClass = classes.reduce((prev, curr) => (alloc[prev] < alloc[curr] ? prev : curr));
-        let assetsInClass = Object.keys(pos)
-            .filter(t => pos[t].classe === mainClass && pos[t].qty > 0)
-            .map(t => ({ ticker: t, val: pos[t].qty * (qData[t]?.p || 0) * (pos[t].moeda === 'USD' ? usdRate : 1) }))
-            .sort((a, b) => a.val - b.val).slice(0, 3);
-
-        let html = `<div class="reb-header"><span>Focar em: ${mainClass.toUpperCase()}</span> <span>🎯 Meta</span></div>`;
-        assetsInClass.forEach(a => {
-            html += `<div class="rebalance-item"><b>${a.ticker}</b> <span class="tag-buy">Aportar Sugerido</span></div>`;
-        });
-        container.innerHTML = html;
+        if(classes.length > 0) {
+            let mainClass = classes.reduce((p, c) => (alloc[p] < alloc[c] ? p : c));
+            let assets = Object.keys(pos).filter(t => pos[t].classe === mainClass && pos[t].qty > 0)
+                .map(t => ({ t, v: pos[t].qty * (qData[t]?.p || 0) * (pos[t].moeda === 'USD' ? usdRate : 1) }))
+                .sort((a, b) => a.v - b.v).slice(0, 3);
+            let html = `<div class="reb-header"><span>Focar em: ${mainClass.toUpperCase()}</span></div>`;
+            assets.forEach(a => html += `<div class="rebalance-item"><b>${a.t}</b> <span class="tag-buy">Aportar Sugerido</span></div>`);
+            container.innerHTML = html;
+        }
     }
 
     document.getElementById('tradeForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        const btn = document.getElementById('btnSave'); btn.innerText = "Enviando...";
+        const btn = document.getElementById('btnSave'); btn.innerText = "Salvando...";
         fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({
             ativo: document.getElementById('ativo').value.toUpperCase(),
             classe: document.getElementById('classe').value,
             quantidade: parseFloat(document.getElementById('quantidade').value) * (document.getElementById('tipo').value === 'V' ? -1 : 1),
             precoInfo: document.getElementById('preco').value,
             moeda: document.getElementById('moeda').value
-        })}).then(() => { alert("Sucesso!"); location.reload(); });
+        })}).then(() => location.reload());
     });
 </script>
 </body>
