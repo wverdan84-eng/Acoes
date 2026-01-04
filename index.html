@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Invest Pro Smart</title>
+    <title>Invest Pro Auto</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --primary: #2563eb; --bg: #f1f5f9; --card-bg: #ffffff; --text: #0f172a; --text-light: #64748b; --success: #16a34a; --danger: #dc2626; --border: #e2e8f0; --gold: #ca8a04; }
@@ -13,7 +13,7 @@
         .app-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 4px; margin-bottom: 15px; }
         .brand { display: flex; align-items: center; gap: 10px; }
         .app-icon { width: 40px; height: 40px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
-        .app-title { font-size: 1.4rem; font-weight: 800; color: var(--primary); }
+        .app-title { font-size: 1.4rem; font-weight: 800; color: var(--primary); letter-spacing: -0.5px; }
         .usd-badge { background: #dbeafe; color: var(--primary); padding: 6px 12px; border-radius: 20px; font-weight: 700; font-size: 0.85rem; }
 
         .card { background: var(--card-bg); border-radius: 16px; padding: 18px; margin-bottom: 12px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
@@ -22,18 +22,19 @@
 
         .chart-container { position: relative; height: 260px; width: 100%; }
 
-        /* REBALANCEAMENTO INTERATIVO */
         .reb-header { background: #fef9c3; color: var(--gold); padding: 10px; border-radius: 10px; font-weight: 800; font-size: 0.82rem; margin-bottom: 10px; }
         .rebalance-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px dashed var(--border); }
-        .tag-buy { background: #dcfce7; color: #15803d; padding: 6px 10px; border-radius: 8px; font-size: 0.72rem; font-weight: bold; cursor: pointer; transition: 0.2s; border: none; }
-        .tag-buy:active { transform: scale(0.9); background: #bbf7d0; }
+        
+        /* Botão Interativo */
+        .tag-buy { background: #dcfce7; color: #15803d; padding: 8px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer; border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .tag-buy:active { transform: scale(0.95); background: #bbf7d0; }
 
         .form-row { display: flex; gap: 8px; margin-bottom: 8px; }
-        input, select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: #f8fafc; outline: none; }
-        button { width: 100%; background: var(--primary); color: #fff; padding: 15px; border: none; border-radius: 12px; font-weight: bold; }
+        input, select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: #f8fafc; font-size: 1rem; }
+        button#btnSave { width: 100%; background: var(--primary); color: #fff; padding: 15px; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem; }
 
         table { width: 100%; border-collapse: collapse; }
-        td { padding: 12px 0; border-bottom: 1px solid var(--border); }
+        td { padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
     </style>
 </head>
 <body>
@@ -53,30 +54,30 @@
 
     <div class="card"><small>Distribuição</small><div class="chart-container"><canvas id="allocationChart"></canvas></div></div>
 
-    <div class="card"><small>Rebalanceamento (Toque em Aportar)</small><div id="rebalance-container"></div></div>
+    <div class="card"><small>Estratégia (Clique em Aportar)</small><div id="rebalance-container"></div></div>
 
     <div class="card">
-        <small>Nova Operação</small>
+        <small>Nova Operação / Preço Médio</small>
         <form id="tradeForm">
-            <input type="text" id="ativo" placeholder="Ticker" required style="text-transform: uppercase; margin-bottom: 8px;">
+            <input type="text" id="ativo" placeholder="Ticker (Ex: PETR4)" required style="text-transform: uppercase; margin-bottom: 8px;">
             <div class="form-row">
                 <select id="classe"><option value="Acoes">Ações</option><option value="FIIs">FIIs</option><option value="Internacional">Exterior</option><option value="RendaFixa">Renda Fixa</option></select>
                 <select id="moeda"><option value="BRL">BRL</option><option value="USD">USD</option></select>
             </div>
             <div class="form-row">
                 <input type="number" id="quantidade" placeholder="Qtd" required step="any">
-                <input type="number" id="preco" placeholder="Preço" step="any">
+                <input type="number" id="preco" placeholder="Preço/Custo">
             </div>
-            <button type="submit" id="btnSave">Salvar</button>
+            <button type="submit" id="btnSave">Salvar Operação</button>
         </form>
     </div>
 
-    <div class="card"><small>Posições</small><table><tbody id="assets-body"></tbody></table></div>
+    <div class="card"><small>Ativos na Carteira</small><table><tbody id="assets-body"></tbody></table></div>
 
 <script>
     const SHEET_ID = '1qGy-7cNRnwgqPNhDP-KEPns_XJ1BuKVbYczwqt_lSMM'; 
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxGf_LIa5DVJOKFebCVsU09zy01JKPTZZ-dolKJW2Yrz6HS8t5z5EjocLCvOm36OymL/exec';
-    let usdRate = 5.00, globalTotal = 0, globalAlloc = {};
+    let usdRate = 5.00, allocationChart = null;
 
     window.onload = loadData;
 
@@ -106,11 +107,14 @@
         render(pos, qData);
     }
 
-    function calculateAporte(ticker) {
-        let aporteTotal = prompt("Quanto você pretende investir no total hoje? (R$)");
-        if (aporteTotal) {
-            let valorCalculado = parseFloat(aporteTotal) * 0.4; // Exemplo: sugere 40% do aporte novo no ativo mais defasado
-            alert(`Para rebalancear sua carteira, aporte R$ ${valorCalculado.toLocaleString('pt-BR', {minimumFractionDigits:2})} em ${ticker}.`);
+    // FUNÇÃO DO MACETE: Sugestão Automática de Valor
+    function suggestValue(ticker, atual, mediaClasse) {
+        const falta = mediaClasse - atual;
+        const sugestao = falta > 0 ? falta : 0;
+        if(sugestao > 0) {
+            alert(`🎯 Sugestão de Equilíbrio:\nPara que ${ticker} atinja a média da sua classe, aporte aproximadamente:\nR$ ${sugestao.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`);
+        } else {
+            alert(`✅ ${ticker} já está acima da média desta classe.`);
         }
     }
 
@@ -118,34 +122,50 @@
         let total = 0, totalCost = 0, alloc = {}, tbody = document.getElementById('assets-body');
         tbody.innerHTML = "";
 
+        let assetList = [];
+
         Object.keys(pos).forEach(t => {
             if(pos[t].qty <= 0.001) return;
             const rate = (pos[t].moeda === 'USD' ? usdRate : 1);
             const val = pos[t].qty * (qData[t]?.p || 0) * rate;
             total += val; totalCost += pos[t].cost * rate;
             alloc[pos[t].classe] = (alloc[pos[t].classe] || 0) + val;
-            tbody.innerHTML += `<tr><td><b>${t}</b><br><small style="border:none;padding:0">PM: R$ ${(pos[t].cost/pos[t].qty).toFixed(2)}</small></td><td style="text-align:right">R$ ${val.toLocaleString('pt-BR')}</td></tr>`;
+            assetList.push({ t, val, classe: pos[t].classe });
+            tbody.innerHTML += `<tr><td><b>${t}</b><br><small style="border:none;padding:0">${pos[t].classe}</small></td><td style="text-align:right">R$ ${val.toLocaleString('pt-BR')}</td></tr>`;
         });
 
-        globalTotal = total;
         document.getElementById('total-equity').innerText = "R$ " + total.toLocaleString('pt-BR', {maximumFractionDigits:0});
         
         const ctx = document.getElementById('allocationChart').getContext('2d');
-        new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(alloc), datasets: [{ data: Object.values(alloc), backgroundColor: ['#2563eb','#10b981','#f59e0b','#ef4444'] }] }, options: { maintainAspectRatio: false } });
+        if(allocationChart) allocationChart.destroy();
+        allocationChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(alloc), datasets: [{ data: Object.values(alloc), backgroundColor: ['#2563eb','#10b981','#f59e0b','#ef4444'] }] }, options: { maintainAspectRatio: false } });
 
         const container = document.getElementById('rebalance-container');
         let classes = Object.keys(alloc);
         if(classes.length > 0) {
-            let main = classes.reduce((p, c) => (alloc[p] < alloc[c] ? p : c));
-            let assets = Object.keys(pos).filter(t => pos[t].classe === main && pos[t].qty > 0).slice(0, 3);
-            let h = `<div class="reb-header">Focar em: ${main.toUpperCase()}</div>`;
-            assets.forEach(a => h += `<div class="rebalance-item"><b>${a}</b> <button class="tag-buy" onclick="calculateAporte('${a}')">Aportar</button></div>`);
+            let mainClass = classes.reduce((p, c) => (alloc[p] < alloc[c] ? p : c));
+            
+            // Calcula a média de valor por ativo dentro da classe mais defasada
+            let ativosDaClasse = assetList.filter(a => a.classe === mainClass);
+            let somaClasse = alloc[mainClass];
+            let mediaPorAtivo = somaClasse / ativosDaClasse.length;
+
+            let top3Defasados = ativosDaClasse.sort((a, b) => a.val - b.val).slice(0, 3);
+
+            let h = `<div class="reb-header">Focar em: ${mainClass.toUpperCase()} (Classe menos investida)</div>`;
+            top3Defasados.forEach(a => {
+                h += `<div class="rebalance-item">
+                        <b>${a.t}</b> 
+                        <button class="tag-buy" onclick="suggestValue('${a.t}', ${a.val}, ${mediaPorAtivo})">Aportar</button>
+                      </div>`;
+            });
             container.innerHTML = h;
         }
     }
 
     document.getElementById('tradeForm').addEventListener('submit', function(e) {
         e.preventDefault();
+        const btn = document.getElementById('btnSave'); btn.innerText = "Salvando...";
         fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({
             ativo: document.getElementById('ativo').value.toUpperCase(),
             classe: document.getElementById('classe').value,
