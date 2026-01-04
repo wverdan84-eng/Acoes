@@ -29,7 +29,8 @@
         /* REBALANCEAMENTO */
         .reb-header { background: #fef9c3; color: var(--gold); padding: 10px; border-radius: 10px; font-weight: 800; font-size: 0.82rem; margin-bottom: 10px; }
         .rebalance-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px dashed var(--border); }
-        .tag-buy { background: #dcfce7; color: #15803d; padding: 6px 10px; border-radius: 8px; font-size: 0.72rem; font-weight: bold; }
+        .tag-buy { background: #dcfce7; color: #15803d; padding: 6px 10px; border-radius: 8px; font-size: 0.72rem; font-weight: bold; border: none; cursor: pointer; transition: 0.2s; }
+        .tag-buy:active { transform: scale(0.9); background: #bbf7d0; }
 
         /* FORM */
         .form-row { display: flex; gap: 8px; margin-bottom: 8px; }
@@ -118,9 +119,20 @@
         render(pos, qData);
     }
 
+    // MACETE: Função que sugere o valor exato
+    function suggestValue(ticker, atual, media) {
+        const falta = media - atual;
+        if(falta > 0) {
+            alert(`💡 Sugestão para ${ticker}:\nAporte R$ ${falta.toLocaleString('pt-BR', {minimumFractionDigits: 2})} para equilibrar este ativo na média da classe.`);
+        } else {
+            alert(`✅ ${ticker} está em dia com a média.`);
+        }
+    }
+
     function render(pos, qData) {
         let total = 0, totalCost = 0, alloc = {}, tbody = document.getElementById('assets-body');
         tbody.innerHTML = "";
+        let assetDetails = [];
 
         Object.keys(pos).forEach(t => {
             if(pos[t].qty <= 0.001) return;
@@ -132,6 +144,7 @@
             
             total += val; totalCost += costTotal;
             alloc[pos[t].classe] = (alloc[pos[t].classe] || 0) + val;
+            assetDetails.push({ t, val, classe: pos[t].classe });
 
             tbody.innerHTML += `<tr>
                 <td><b>${t}</b><br><small style="border:none; padding:0; font-size:0.65rem">PM: R$ ${pm.toLocaleString('pt-BR',{minimumFractionDigits:2})}</small></td>
@@ -158,12 +171,18 @@
         const container = document.getElementById('rebalance-container');
         let classes = Object.keys(alloc);
         if(classes.length > 0) {
-            let main = classes.reduce((p, c) => (alloc[p] < alloc[c] ? p : c));
-            let assets = Object.keys(pos).filter(t => pos[t].classe === main && pos[t].qty > 0)
-                .map(t => ({ t, v: pos[t].qty * (qData[t]?.p || 0) * (pos[t].moeda === 'USD' ? usdRate : 1) }))
-                .sort((a, b) => a.v - b.v).slice(0, 3);
-            let h = `<div class="reb-header">Focar em: ${main.toUpperCase()}</div>`;
-            assets.forEach(a => h += `<div class="rebalance-item"><b>${a.t}</b> <span class="tag-buy">Aportar</span></div>`);
+            let mainClass = classes.reduce((p, c) => (alloc[p] < alloc[c] ? p : c));
+            let assetsInClass = assetDetails.filter(a => a.classe === mainClass);
+            let avgValue = alloc[mainClass] / assetsInClass.length;
+            
+            let sorted = assetsInClass.sort((a, b) => a.val - b.val).slice(0, 3);
+            let h = `<div class="reb-header">Focar em: ${mainClass.toUpperCase()}</div>`;
+            sorted.forEach(a => {
+                h += `<div class="rebalance-item">
+                        <b>${a.t}</b> 
+                        <button class="tag-buy" onclick="suggestValue('${a.t}', ${a.val}, ${avgValue})">Aportar</button>
+                      </div>`;
+            });
             container.innerHTML = h;
         }
     }
