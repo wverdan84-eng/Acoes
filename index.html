@@ -6,107 +6,103 @@
     <title>Invest Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --primary: #2563eb; --bg: #f1f5f9; --card-bg: #ffffff; --text: #0f172a; --text-light: #64748b; --success: #16a34a; --danger: #dc2626; --border: #e2e8f0; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background-color: var(--bg); color: var(--text); padding: 12px; padding-bottom: 80px; }
+        :root { --primary: #2563eb; --bg: #f1f5f9; --card-bg: #ffffff; --text: #0f172a; --text-light: #64748b; --success: #16a34a; --danger: #dc2626; --border: #e2e8f0; --gold: #ca8a04; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg); color: var(--text); padding: 12px; padding-bottom: 40px; }
+        
         .card { background: var(--card-bg); border-radius: 16px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .grid-dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .value { font-size: 1.3rem; font-weight: 800; }
-        .sub-value { font-size: 0.8rem; color: var(--text-light); }
-        .rebalance-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--border); }
+        small { font-size: 0.7rem; text-transform: uppercase; color: var(--text-light); font-weight: bold; display: block; margin-bottom: 8px; }
+
+        .grid-dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+        .value { font-size: 1.2rem; font-weight: 800; }
+
+        /* Estilo Rebalanceamento */
+        .reb-header { background: #fef9c3; color: var(--gold); padding: 8px 12px; border-radius: 8px; font-weight: 800; font-size: 0.85rem; margin-bottom: 10px; display: flex; justify-content: space-between; }
+        .rebalance-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed var(--border); }
         .tag-buy { background: #dcfce7; color: #15803d; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; }
+
+        input, select { width: 100%; padding: 12px; margin: 6px 0; border-radius: 10px; border: 1px solid var(--border); background: #f8fafc; }
+        button { width: 100%; background: var(--primary); color: #fff; padding: 14px; border: none; border-radius: 10px; font-weight: bold; margin-top: 10px; }
         table { width: 100%; border-collapse: collapse; }
-        td, th { padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
-        input, select { width: 100%; padding: 10px; margin: 5px 0; border-radius: 8px; border: 1px solid var(--border); }
-        button { width: 100%; background: var(--primary); color: #fff; padding: 12px; border: none; border-radius: 8px; font-weight: bold; }
+        td { padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1 style="color:var(--primary); font-size: 1.4rem;">Invest Pro</h1>
-        <div id="usd-rate" style="font-weight: bold; font-size: 0.9rem;">USD ...</div>
-    </div>
-
     <div class="grid-dashboard">
         <div class="card">
             <small>Patrimônio</small>
-            <div class="value" id="total-equity">...</div>
+            <div class="value" id="total-equity">R$ 0,00</div>
         </div>
         <div class="card">
-            <small>Lucro/Prejuízo</small>
-            <div class="value" id="total-pl">...</div>
+            <small>P/L Total</small>
+            <div class="value" id="total-pl">R$ 0,00</div>
         </div>
     </div>
 
     <div class="card">
-        <small>ALOCAÇÃO POR CLASSE</small>
-        <div style="height: 180px;"><canvas id="allocationChart"></canvas></div>
+        <small>Alocação</small>
+        <div style="height: 150px;"><canvas id="allocationChart"></canvas></div>
     </div>
 
     <div class="card">
-        <small>O QUE COMPRAR AGORA? (REBALANCEAR)</small>
-        <div id="rebalance-list" style="margin-top: 10px;">
-            <p style="font-size: 0.8rem; color: #999;">Carregando sugestões...</p>
+        <small>Sugestão de Aporte</small>
+        <div id="rebalance-container">
+            <p style="text-align:center; font-size:0.8rem; color:#999;">Analisando carteira...</p>
         </div>
     </div>
 
     <div class="card">
-        <small>MEUS ATIVOS</small>
-        <table>
-            <tbody id="assets-body"></tbody>
-        </table>
-    </div>
-
-    <div class="card">
-        <small>NOVA OPERAÇÃO</small>
+        <small>Nova Operação</small>
         <form id="tradeForm">
-            <input type="text" id="ativo" placeholder="Ticker (ex: PETR4)" required style="text-transform: uppercase;">
-            <select id="classe"><option value="Acoes">Ações</option><option value="FIIs">FIIs</option><option value="RendaFixa">Renda Fixa</option><option value="Internacional">Exterior</option></select>
-            <div style="display: flex; gap: 5px;">
-                <select id="tipo"><option value="C">Compra</option><option value="V">Venda</option></select>
-                <select id="moeda"><option value="BRL">BRL</option><option value="USD">USD</option></select>
+            <input type="text" id="ativo" placeholder="Ativo" required style="text-transform: uppercase;">
+            <select id="classe">
+                <option value="Acoes">Ações</option>
+                <option value="FIIs">FIIs</option>
+                <option value="RendaFixa">Renda Fixa</option>
+                <option value="Internacional">Exterior</option>
+            </select>
+            <div style="display: flex; gap: 8px;">
+                <input type="number" id="quantidade" placeholder="Qtd" required step="any">
+                <input type="number" id="preco" placeholder="Preço" step="any">
             </div>
-            <input type="number" id="quantidade" placeholder="Qtd" required step="any">
-            <input type="number" id="preco" placeholder="Preço Pago (Opcional)" step="any">
-            <button type="submit" id="btnSave">Salvar Operação</button>
+            <button type="submit" id="btnSave">Salvar</button>
         </form>
+    </div>
+
+    <div class="card">
+        <small>Meus Ativos</small>
+        <table><tbody id="assets-body"></tbody></table>
     </div>
 
 <script>
     const SHEET_ID = '1qGy-7cNRnwgqPNhDP-KEPns_XJ1BuKVbYczwqt_lSMM'; 
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxGf_LIa5DVJOKFebCVsU09zy01JKPTZZ-dolKJW2Yrz6HS8t5z5EjocLCvOm36OymL/exec';
-
-    let usdRate = 5.00;
-    let allocationChart = null;
+    let usdRate = 5.00; let allocationChart = null;
 
     window.onload = loadData;
 
     async function loadData() {
-        try {
-            const qUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=COTACOES`;
-            const oUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=OPERACOES`;
-            const [rQ, rO] = await Promise.all([fetch(qUrl).then(r => r.text()), fetch(oUrl).then(r => r.text())]);
-            const parse = (t) => JSON.parse(t.substr(47).slice(0, -2)).table.rows.map(r => r.c.map(c => c ? c.v : null));
-            processData(parse(rO), parse(rQ));
-        } catch (e) { alert("Erro ao carregar dados da planilha."); }
+        const qUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=COTACOES`;
+        const oUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=OPERACOES`;
+        const [rQ, rO] = await Promise.all([fetch(qUrl).then(r => r.text()), fetch(oUrl).then(r => r.text())]);
+        const parse = (t) => JSON.parse(t.substr(47).slice(0, -2)).table.rows.map(r => r.c.map(c => c ? c.v : null));
+        processData(parse(rO), parse(rQ));
     }
 
     function processData(ops, quotes) {
         let qData = {};
         quotes.forEach(r => { if(r[0]) qData[r[0].toString().trim().toUpperCase()] = { p: r[1] || 0 }; });
-        if(qData['USD']) { usdRate = qData['USD'].p; document.getElementById('usd-rate').innerText = "Dólar: R$ " + usdRate.toFixed(2); }
+        if(qData['USD']) usdRate = qData['USD'].p;
 
         let pos = {};
         ops.forEach(o => {
             let t = o[1].toString().trim().toUpperCase();
-            if(!pos[t]) pos[t] = { qty: 0, cost: 0, classe: o[2], moeda: o[5] };
+            if(!pos[t]) pos[t] = { qty: 0, cost: 0, classe: o[2], moeda: o[5] || 'BRL' };
             let q = parseFloat(o[3]);
             pos[t].qty += q;
             if(q > 0) pos[t].cost += q * (o[4] || 0);
         });
-
         render(pos, qData);
     }
 
@@ -115,53 +111,59 @@
         tbody.innerHTML = "";
 
         Object.keys(pos).forEach(t => {
-            let p = pos[t]; if(p.qty <= 0) return;
-            let curP = qData[t]?.p || 0;
-            let val = p.qty * curP * (p.moeda === 'USD' ? usdRate : 1);
-            total += val;
-            totalCost += p.cost * (p.moeda === 'USD' ? usdRate : 1);
-            alloc[p.classe] = (alloc[p.classe] || 0) + val;
-
-            tbody.innerHTML += `<tr><td><b>${t}</b><br><small>${p.classe}</small></td><td style="text-align:right">R$ ${val.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`;
+            if(pos[t].qty <= 0.001) return;
+            let val = pos[t].qty * (qData[t]?.p || 0) * (pos[t].moeda === 'USD' ? usdRate : 1);
+            total += val; totalCost += pos[t].cost * (pos[t].moeda === 'USD' ? usdRate : 1);
+            alloc[pos[t].classe] = (alloc[pos[t].classe] || 0) + val;
+            tbody.innerHTML += `<tr><td><b>${t}</b></td><td style="text-align:right">R$ ${val.toLocaleString('pt-BR')}</td></tr>`;
         });
 
         document.getElementById('total-equity').innerText = "R$ " + total.toLocaleString('pt-BR');
-        let pl = total - totalCost;
-        document.getElementById('total-pl').innerText = "R$ " + pl.toLocaleString('pt-BR');
-        document.getElementById('total-pl').style.color = pl >= 0 ? 'var(--success)' : 'var(--danger)';
+        document.getElementById('total-pl').innerText = "R$ " + (total - totalCost).toLocaleString('pt-BR');
 
-        // GRÁFICO
+        // Chart
         const ctx = document.getElementById('allocationChart').getContext('2d');
         if(allocationChart) allocationChart.destroy();
-        allocationChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(alloc), datasets: [{ data: Object.values(alloc), backgroundColor: ['#2563eb','#10b981','#f59e0b','#ef4444'] }] }, options: { maintainAspectRatio: false, plugins: { legend: { position: 'right' } } } });
+        allocationChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(alloc), datasets: [{ data: Object.values(alloc), backgroundColor: ['#2563eb','#10b981','#f59e0b','#ef4444'] }] }, options: { maintainAspectRatio: false } });
 
-        // REBALANCEAMENTO POR ATIVO
-        let reb = document.getElementById('rebalance-list');
-        reb.innerHTML = "";
-        let tickers = Object.keys(pos).filter(t => pos[t].qty > 0);
-        let metaPerTicker = total / tickers.length; // Macete: divide o bolo igual entre os ativos
+        // LOGICA DE REBALANCEAMENTO: CLASSE + 3 ATIVOS
+        const container = document.getElementById('rebalance-container');
+        container.innerHTML = "";
 
-        tickers.forEach(t => {
-            let curVal = pos[t].qty * (qData[t]?.p || 0) * (pos[t].moeda === 'USD' ? usdRate : 1);
-            if(curVal < metaPerTicker) {
-                let diff = metaPerTicker - curVal;
-                reb.innerHTML += `<div class="rebalance-item"><span><b>${t}</b></span><span class="tag-buy">Comprar R$ ${diff.toLocaleString('pt-BR', {maximumFractionDigits:0})}</span></div>`;
-            }
+        // 1. Achar a classe com menor porcentagem em relação à média
+        let classes = Object.keys(alloc);
+        let targetPerClass = total / classes.length;
+        let mainClass = classes.reduce((prev, curr) => (alloc[prev] < alloc[curr] ? prev : curr));
+
+        // 2. Achar os 3 ativos dessa classe que estão mais "para trás"
+        let assetsInClass = Object.keys(pos)
+            .filter(t => pos[t].classe === mainClass && pos[t].qty > 0)
+            .map(t => ({ 
+                ticker: t, 
+                val: pos[t].qty * (qData[t]?.p || 0) * (pos[t].moeda === 'USD' ? usdRate : 1) 
+            }))
+            .sort((a, b) => a.val - b.val)
+            .slice(0, 3);
+
+        // 3. Renderizar
+        let html = `<div class="reb-header"><span>Focar em: ${mainClass.toUpperCase()}</span><span>↓ Abaixo da Meta</span></div>`;
+        assetsInClass.forEach(a => {
+            let diff = (targetPerClass / assetsInClass.length) - a.val;
+            if(diff < 0) diff = 100; // Sugestão mínima se já estiver perto
+            html += `<div class="rebalance-item"><b>${a.ticker}</b> <span class="tag-buy">Comprar R$ ${diff.toLocaleString('pt-BR', {maximumFractionDigits:0})}</span></div>`;
         });
+        container.innerHTML = html;
     }
 
     document.getElementById('tradeForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        const btn = document.getElementById('btnSave'); btn.innerText = "Salvando...";
-        const payload = {
+        fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({
             ativo: document.getElementById('ativo').value.toUpperCase(),
             classe: document.getElementById('classe').value,
-            quantidade: parseFloat(document.getElementById('quantidade').value) * (document.getElementById('tipo').value === 'V' ? -1 : 1),
+            quantidade: parseFloat(document.getElementById('quantidade').value),
             precoInfo: document.getElementById('preco').value,
-            moeda: document.getElementById('moeda').value
-        };
-        fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) })
-        .then(() => { alert("Sucesso!"); location.reload(); });
+            moeda: 'BRL'
+        })}).then(() => location.reload());
     });
 </script>
 </body>
