@@ -3,36 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Invest Pro Auto</title>
+    <title>Invest Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --primary: #2563eb; --bg: #f1f5f9; --card-bg: #ffffff; --text: #0f172a; --text-light: #64748b; --success: #16a34a; --danger: #dc2626; --border: #e2e8f0; --gold: #ca8a04; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg); color: var(--text); padding: 12px; padding-bottom: 40px; }
         
+        /* HEADER ESTILIZADO */
         .app-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 4px; margin-bottom: 15px; }
         .brand { display: flex; align-items: center; gap: 10px; }
-        .app-icon { width: 40px; height: 40px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
+        .app-icon { width: 40px; height: 40px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; border-radius: 12px; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2); }
         .app-title { font-size: 1.4rem; font-weight: 800; color: var(--primary); letter-spacing: -0.5px; }
         .usd-badge { background: #dbeafe; color: var(--primary); padding: 6px 12px; border-radius: 20px; font-weight: 700; font-size: 0.85rem; }
 
         .card { background: var(--card-bg); border-radius: 16px; padding: 18px; margin-bottom: 12px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-        small { font-size: 0.72rem; text-transform: uppercase; color: var(--text-light); font-weight: bold; display: block; margin-bottom: 8px; border-left: 3px solid var(--primary); padding-left: 8px; }
-        .value { font-size: 1.2rem; font-weight: 800; }
+        small { font-size: 0.75rem; text-transform: uppercase; color: var(--text-light); font-weight: bold; display: block; margin-bottom: 10px; border-left: 3px solid var(--primary); padding-left: 8px; }
 
-        .chart-container { position: relative; height: 260px; width: 100%; }
+        .grid-dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+        .value { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.5px; }
 
-        .reb-header { background: #fef9c3; color: var(--gold); padding: 10px; border-radius: 10px; font-weight: 800; font-size: 0.82rem; margin-bottom: 10px; }
+        .chart-container { position: relative; height: 250px; width: 100%; margin: 10px 0; }
+
+        .reb-header { background: #fef9c3; color: var(--gold); padding: 10px; border-radius: 10px; font-weight: 800; font-size: 0.85rem; margin-bottom: 10px; display: flex; justify-content: space-between; }
         .rebalance-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px dashed var(--border); }
-        
-        /* Botão Interativo */
-        .tag-buy { background: #dcfce7; color: #15803d; padding: 8px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer; border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .tag-buy:active { transform: scale(0.95); background: #bbf7d0; }
+        .tag-buy { background: #dcfce7; color: #15803d; padding: 6px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: bold; }
 
         .form-row { display: flex; gap: 8px; margin-bottom: 8px; }
-        input, select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: #f8fafc; font-size: 1rem; }
-        button#btnSave { width: 100%; background: var(--primary); color: #fff; padding: 15px; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem; }
-
+        input, select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: #f8fafc; font-size: 1rem; outline: none; }
+        button { width: 100%; background: var(--primary); color: #fff; padding: 15px; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem; margin-top: 10px; }
+        
         table { width: 100%; border-collapse: collapse; }
         td { padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
     </style>
@@ -41,43 +41,80 @@
 
     <div class="app-header">
         <div class="brand">
-            <div class="app-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:20px;height:20px;"><line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line><line x1="6" y1="20" x2="6" y2="16"></line></svg></div>
+            <div class="app-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;">
+                    <line x1="12" y1="20" x2="12" y2="10"></line>
+                    <line x1="18" y1="20" x2="18" y2="4"></line>
+                    <line x1="6" y1="20" x2="6" y2="16"></line>
+                </svg>
+            </div>
             <h1 class="app-title">Invest Pro</h1>
         </div>
         <div id="usd-rate" class="usd-badge">US$ 0.00</div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
-        <div class="card"><small>Patrimônio</small><div class="value" id="total-equity">R$ 0,00</div></div>
-        <div class="card"><small>Lucro Total</small><div class="value" id="total-pl">R$ 0,00</div></div>
+    <div class="grid-dashboard">
+        <div class="card">
+            <small>Patrimônio</small>
+            <div class="value" id="total-equity">R$ 0,00</div>
+        </div>
+        <div class="card">
+            <small>P/L Total</small>
+            <div class="value" id="total-pl">R$ 0,00</div>
+        </div>
     </div>
 
-    <div class="card"><small>Distribuição</small><div class="chart-container"><canvas id="allocationChart"></canvas></div></div>
+    <div class="card">
+        <small>Distribuição da Carteira</small>
+        <div class="chart-container">
+            <canvas id="allocationChart"></canvas>
+        </div>
+    </div>
 
-    <div class="card"><small>Estratégia (Clique em Aportar)</small><div id="rebalance-container"></div></div>
+    <div class="card">
+        <small>Estratégia de Aporte</small>
+        <div id="rebalance-container">
+            <p style="text-align:center; padding:10px; color:#999;">Analisando dados...</p>
+        </div>
+    </div>
 
     <div class="card">
         <small>Nova Operação / Preço Médio</small>
         <form id="tradeForm">
-            <input type="text" id="ativo" placeholder="Ticker (Ex: PETR4)" required style="text-transform: uppercase; margin-bottom: 8px;">
+            <input type="text" id="ativo" placeholder="Ticker (ex: PETR4)" required style="text-transform: uppercase; margin-bottom: 8px;">
             <div class="form-row">
-                <select id="classe"><option value="Acoes">Ações</option><option value="FIIs">FIIs</option><option value="Internacional">Exterior</option><option value="RendaFixa">Renda Fixa</option></select>
-                <select id="moeda"><option value="BRL">BRL</option><option value="USD">USD</option></select>
+                <select id="classe">
+                    <option value="Acoes">Ações</option>
+                    <option value="FIIs">FIIs</option>
+                    <option value="Internacional">Exterior</option>
+                    <option value="RendaFixa">Renda Fixa</option>
+                </select>
+                <select id="moeda">
+                    <option value="BRL">BRL</option>
+                    <option value="USD">USD</option>
+                </select>
             </div>
             <div class="form-row">
                 <input type="number" id="quantidade" placeholder="Qtd" required step="any">
-                <input type="number" id="preco" placeholder="Preço/Custo">
+                <input type="number" id="preco" placeholder="Preço" step="any">
             </div>
-            <button type="submit" id="btnSave">Salvar Operação</button>
+            <select id="tipo" style="margin-bottom: 8px;">
+                <option value="C">Compra</option>
+                <option value="V">Venda</option>
+            </select>
+            <button type="submit" id="btnSave">Salvar na Planilha</button>
         </form>
     </div>
 
-    <div class="card"><small>Ativos na Carteira</small><table><tbody id="assets-body"></tbody></table></div>
+    <div class="card">
+        <small>Meus Ativos</small>
+        <table><tbody id="assets-body"></tbody></table>
+    </div>
 
 <script>
     const SHEET_ID = '1qGy-7cNRnwgqPNhDP-KEPns_XJ1BuKVbYczwqt_lSMM'; 
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxGf_LIa5DVJOKFebCVsU09zy01JKPTZZ-dolKJW2Yrz6HS8t5z5EjocLCvOm36OymL/exec';
-    let usdRate = 5.00, allocationChart = null;
+    let usdRate = 5.00; let allocationChart = null;
 
     window.onload = loadData;
 
@@ -94,7 +131,10 @@
     function processData(ops, quotes) {
         let qData = {};
         quotes.forEach(r => { if(r[0]) qData[r[0].toString().trim().toUpperCase()] = { p: r[1] || 0 }; });
-        if(qData['USD']) { usdRate = qData['USD'].p; document.getElementById('usd-rate').innerText = "US$ " + usdRate.toFixed(2); }
+        if(qData['USD']) {
+            usdRate = qData['USD'].p;
+            document.getElementById('usd-rate').innerText = "US$ " + usdRate.toFixed(2);
+        }
 
         let pos = {};
         ops.forEach(o => {
@@ -107,59 +147,42 @@
         render(pos, qData);
     }
 
-    // FUNÇÃO DO MACETE: Sugestão Automática de Valor
-    function suggestValue(ticker, atual, mediaClasse) {
-        const falta = mediaClasse - atual;
-        const sugestao = falta > 0 ? falta : 0;
-        if(sugestao > 0) {
-            alert(`🎯 Sugestão de Equilíbrio:\nPara que ${ticker} atinja a média da sua classe, aporte aproximadamente:\nR$ ${sugestao.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`);
-        } else {
-            alert(`✅ ${ticker} já está acima da média desta classe.`);
-        }
-    }
-
     function render(pos, qData) {
         let total = 0, totalCost = 0, alloc = {}, tbody = document.getElementById('assets-body');
         tbody.innerHTML = "";
 
-        let assetList = [];
-
         Object.keys(pos).forEach(t => {
             if(pos[t].qty <= 0.001) return;
-            const rate = (pos[t].moeda === 'USD' ? usdRate : 1);
-            const val = pos[t].qty * (qData[t]?.p || 0) * rate;
+            let rate = (pos[t].moeda === 'USD' ? usdRate : 1);
+            let val = pos[t].qty * (qData[t]?.p || 0) * rate;
             total += val; totalCost += pos[t].cost * rate;
             alloc[pos[t].classe] = (alloc[pos[t].classe] || 0) + val;
-            assetList.push({ t, val, classe: pos[t].classe });
-            tbody.innerHTML += `<tr><td><b>${t}</b><br><small style="border:none;padding:0">${pos[t].classe}</small></td><td style="text-align:right">R$ ${val.toLocaleString('pt-BR')}</td></tr>`;
+            tbody.innerHTML += `<tr><td><b>${t}</b><br><small style="border:none; padding:0;">${pos[t].classe}</small></td><td style="text-align:right">R$ ${val.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`;
         });
 
-        document.getElementById('total-equity').innerText = "R$ " + total.toLocaleString('pt-BR', {maximumFractionDigits:0});
-        
+        document.getElementById('total-equity').innerText = "R$ " + total.toLocaleString('pt-BR', {minimumFractionDigits:2});
+        const pl = total - totalCost;
+        document.getElementById('total-pl').innerText = "R$ " + pl.toLocaleString('pt-BR', {minimumFractionDigits:2});
+        document.getElementById('total-pl').style.color = pl >= 0 ? 'var(--success)' : 'var(--danger)';
+
         const ctx = document.getElementById('allocationChart').getContext('2d');
         if(allocationChart) allocationChart.destroy();
-        allocationChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(alloc), datasets: [{ data: Object.values(alloc), backgroundColor: ['#2563eb','#10b981','#f59e0b','#ef4444'] }] }, options: { maintainAspectRatio: false } });
+        allocationChart = new Chart(ctx, { 
+            type: 'doughnut', 
+            data: { labels: Object.keys(alloc), datasets: [{ data: Object.values(alloc), backgroundColor: ['#2563eb','#10b981','#f59e0b','#ef4444'], borderWidth: 2 }] }, 
+            options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } 
+        });
 
         const container = document.getElementById('rebalance-container');
         let classes = Object.keys(alloc);
         if(classes.length > 0) {
             let mainClass = classes.reduce((p, c) => (alloc[p] < alloc[c] ? p : c));
-            
-            // Calcula a média de valor por ativo dentro da classe mais defasada
-            let ativosDaClasse = assetList.filter(a => a.classe === mainClass);
-            let somaClasse = alloc[mainClass];
-            let mediaPorAtivo = somaClasse / ativosDaClasse.length;
-
-            let top3Defasados = ativosDaClasse.sort((a, b) => a.val - b.val).slice(0, 3);
-
-            let h = `<div class="reb-header">Focar em: ${mainClass.toUpperCase()} (Classe menos investida)</div>`;
-            top3Defasados.forEach(a => {
-                h += `<div class="rebalance-item">
-                        <b>${a.t}</b> 
-                        <button class="tag-buy" onclick="suggestValue('${a.t}', ${a.val}, ${mediaPorAtivo})">Aportar</button>
-                      </div>`;
-            });
-            container.innerHTML = h;
+            let assets = Object.keys(pos).filter(t => pos[t].classe === mainClass && pos[t].qty > 0)
+                .map(t => ({ t, v: pos[t].qty * (qData[t]?.p || 0) * (pos[t].moeda === 'USD' ? usdRate : 1) }))
+                .sort((a, b) => a.v - b.v).slice(0, 3);
+            let html = `<div class="reb-header"><span>Focar em: ${mainClass.toUpperCase()}</span></div>`;
+            assets.forEach(a => html += `<div class="rebalance-item"><b>${a.t}</b> <span class="tag-buy">Aportar Sugerido</span></div>`);
+            container.innerHTML = html;
         }
     }
 
@@ -169,7 +192,7 @@
         fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({
             ativo: document.getElementById('ativo').value.toUpperCase(),
             classe: document.getElementById('classe').value,
-            quantidade: parseFloat(document.getElementById('quantidade').value),
+            quantidade: parseFloat(document.getElementById('quantidade').value) * (document.getElementById('tipo').value === 'V' ? -1 : 1),
             precoInfo: document.getElementById('preco').value,
             moeda: document.getElementById('moeda').value
         })}).then(() => location.reload());
