@@ -25,6 +25,80 @@
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
         body { background-color: var(--bg); color: var(--text); padding-bottom: 50px; }
+
+       .container {
+  max-width: 900px;
+  margin: auto;
+  padding: 16px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 10px 25px -12px rgba(0,0,0,.15);
+}
+
+.grid-dashboard {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.grid-main {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.value {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.sub-value {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.text-green { color: var(--success); }
+.text-red { color: var(--danger); }
+
+.rebalance-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px dashed #e5e7eb;
+}
+
+.tag-buy {
+  background: #dcfce7;
+  color: #166534;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: bold;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .grid-dashboard {
+    grid-template-columns: 1fr;
+  }
+}
         /* TODO: resto do seu CSS permanece igual */
     </style>
 </head>
